@@ -3,10 +3,10 @@ DUO one-epoch smoke, first logged 50 iterations (server, 2026-09-30):
 - MMDetection JSON log: `work_dirs/rhcnet_duo_smoke/20260930_164521.log.json`.
 - Average iteration time: 3.80866 s/iter.
 - Data time: 0.07112 s/iter.
-- Next logged 50-iteration window: 2.87307 s/iter, 0.01443 s data time; `loss_cls=0.69608`, `loss_bbox=0.89905`, total `loss=1.59512` at iter 100.
+- Subsequent 50-iteration windows (iter / time / data time / total loss): `100 / 2.87 / 0.014 / 1.5951`; `150 / 3.56 / 0.016 / 1.4787`; `200 / 3.19 / 0.015 / 1.3292`; `250 / 3.79 / 0.015 / 1.2386`; `300 / 2.98 / 0.016 / 1.1756`; `350 / 3.50 / 0.016 / 1.2592`; `400 / 4.54 / 0.016 / 1.1795`; `450 / 6.99 / 0.016 / 1.0945`; `500 / 7.04 / 0.016 / 1.0714`; `550 / 6.41 / 0.016 / 1.0501`; `600 / 7.48 / 0.016 / 1.0059`; `650 / 7.84 / 0.016 / 0.9482`; `700 / 7.025 / 0.015 / 1.0077`; `750 / 7.943 / 0.015 / 0.9928`; `800 / 5.646 / 0.015 / 0.9291`.
 - MMCV peak-memory field: 7,766 MiB; sampled `nvidia-smi` memory later reached 10,245 MiB.
-- Sampled GPU utilization: 0–20%; main Python process used about 3.3 CPU cores. This is consistent with the active HFCP CGCA path synchronizing each feature map to CPU and running scikit-learn KMeans. This attribution is an inference from the code path and runtime samples, not a controlled ablation.
+- A 181-second `nvidia-smi` sample overlapping smoke iterations 250–350 recorded mean GPU utilization 13.0% (range 0–58%) and stable reported memory of 10,245 MiB. Main Python process samples were about 3.5 CPU cores. This is consistent with the active HFCP CGCA path synchronizing each feature map to CPU and running scikit-learn KMeans. This attribution is an inference from the code path and runtime samples, not a controlled ablation.
 - Loss at iter 50: `loss_cls=1.01619`, `loss_bbox=0.94160`, total `loss=1.95778` (finite).
-- Estimated DUO train epoch: 6,617 / batch 2 ≈ 3,309 iterations; using the first two logged windows (mean 3.34 s/iter), about 3.1 hours before validation. This is a rough estimate, not final measured runtime.
+- At iter 800 (about 72 minutes wall time), total loss remained finite (`0.9291`); MMCV-reported peak memory remained about 7,768 MiB. The first fifteen logged windows average 5.11 s/iter, while the most recent seven average 7.05 s/iter. At the recent rate, rough training-only estimates are 9.5 days for DUO and 7.4 days for UTDAC, before evaluation; full-run times are not measured and may vary.
 
-The one-epoch smoke run is still in progress; the figures above are the first available 50-iteration window, not a completed smoke result.
+The one-epoch smoke run is still in progress (800 / approximately 3,309 iterations); the figures above are early timing samples, not a completed smoke result.
