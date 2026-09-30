@@ -1,0 +1,12 @@
+DUO one-epoch smoke, first logged 50 iterations (server, 2026-09-30):
+- Physical setup: 1x NVIDIA GeForce RTX 2080 Ti (22,528 MiB), batch size 2/GPU.
+- MMDetection JSON log: `work_dirs/rhcnet_duo_smoke/20260930_164521.log.json`.
+- Average iteration time: 3.80866 s/iter.
+- Data time: 0.07112 s/iter.
+- Next logged 50-iteration window: 2.87307 s/iter, 0.01443 s data time; `loss_cls=0.69608`, `loss_bbox=0.89905`, total `loss=1.59512` at iter 100.
+- MMCV peak-memory field: 7,766 MiB; sampled `nvidia-smi` memory later reached 10,245 MiB.
+- Sampled GPU utilization: 0–20%; main Python process used about 3.3 CPU cores. This is consistent with the active HFCP CGCA path synchronizing each feature map to CPU and running scikit-learn KMeans. This attribution is an inference from the code path and runtime samples, not a controlled ablation.
+- Loss at iter 50: `loss_cls=1.01619`, `loss_bbox=0.94160`, total `loss=1.95778` (finite).
+- Estimated DUO train epoch: 6,617 / batch 2 ≈ 3,309 iterations; using the first two logged windows (mean 3.34 s/iter), about 3.1 hours before validation. This is a rough estimate, not final measured runtime.
+
+The one-epoch smoke run is still in progress; the figures above are the first available 50-iteration window, not a completed smoke result.

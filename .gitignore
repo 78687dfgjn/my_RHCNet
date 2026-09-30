@@ -1,0 +1,30 @@
+# User datasets and extracted data
+/data/
+/datasets/
+
+# Training outputs and pretrained/model weights
+/work_dirs/
+*.pth
+*.pt
+*.ckpt
+
+# Local telemetry and temporary output
+/wandb/
+*.log
+*.log.json
+*.log.json.*
+
+# Python/build artifacts
+__pycache__/
+*.py[cod]
+*.so
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Local editor and OS state
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
