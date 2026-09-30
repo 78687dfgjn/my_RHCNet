@@ -49,3 +49,8 @@ All four explicit official-release/paper-hparam configs loaded with MMDetection.
 ## GitHub Deploy Key
 
 A dedicated ED25519 key was created on the reproduction server at `/root/.ssh/id_ed25519_my_RHCNet_deploy` and registered on `78687dfgjn/my_RHCNet` as a write-enabled repository Deploy Key (`read_only=false`). Its fingerprint is `SHA256:dK0I0DUrmNW+iLMOcVc1POnrBdkslOb6OYnPcf8+H7Y`. The server has an SSH host entry for GitHub and the known GitHub ED25519 host key. `ssh -T git@github.com` from the server returned GitHub's successful-authentication banner for `78687dfgjn/my_RHCNet`. The private key is only on the server and was not copied into this repository.
+
+
+## DUO smoke paused for user-requested pause (2026-09-30)
+
+The active smoke was suspended in memory at iter 2,450/3,309. Latest total loss was 0.66989; latest logger window was 3.94487 s/iter with ETA 1:00:11. The process and four loader workers are SIGSTOP-suspended, but no epoch checkpoint exists. The evaluation-only watcher was stopped; the 35-epoch auto-launch remains disabled. A tracked progress snapshot and same-instance resume steps are in `reproduction_logs/duo_smoke_pause_20260930.md`. Raw logs/checkpoints remain in `/hy-tmp` and are not committed. Do not claim smoke completion or AP until training resumes, saves `epoch_1.pth`, and both evaluations finish.
