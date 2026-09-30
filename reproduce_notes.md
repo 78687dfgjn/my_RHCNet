@@ -6,8 +6,8 @@
 - Audited commit: `27253dce2d70875cfc5983bfa3ad194583eb58ee`
 - Target repository: `git@github.com:78687dfgjn/my_RHCNet.git`
 - Official source files have not been modified. Paper-specific changes belong in `configs/reproduction/` and independent dataset scripts.
-- The official model passed construction and a random CUDA feature/head forward. Following the user's instruction to continue, training uses the repository's actual implementation, with paper/source mismatches reported rather than patched into a different algorithm. Both uploaded archives passed remote SHA256 and ZIP CRC checks, have been extracted to `/hy-tmp/RHCNet/datasets/`, and project data symlinks are active. UTDAC derived annotations were generated without changing the originals; both DUO and UTDAC configs successfully built their train/validation datasets. The one-epoch DUO smoke test is running in tmux as `rhcnet_duo_smoke`; it reached 800/approximately 3,309 iterations with finite losses. See `reproduction_logs/dataset_audit.md` and `reproduction_logs/benchmark_duo.txt`.
-- The smoke log confirms that the configured `torchvision://resnet50` ImageNet checkpoint (`resnet50-0676ba61.pth`, 102,530,333 bytes) was downloaded and used, not random initialization. Total loss was finite at all logged windows through iter 800 (1.96 at iter 50; 0.93 at iter 800).
+- The official model passed construction and a random CUDA feature/head forward. Following the user's instruction to continue, training uses the repository's actual implementation, with paper/source mismatches reported rather than patched into a different algorithm. Both uploaded archives passed remote SHA256 and ZIP CRC checks, have been extracted to `/hy-tmp/RHCNet/datasets/`, and project data symlinks are active. UTDAC derived annotations were generated without changing the originals; both DUO and UTDAC configs successfully built their train/validation datasets. The one-epoch DUO smoke test is running in tmux as `rhcnet_duo_smoke`; it reached 1,000/approximately 3,309 iterations with finite losses. See `reproduction_logs/dataset_audit.md` and `reproduction_logs/benchmark_duo.txt`.
+- The smoke log confirms that the configured `torchvision://resnet50` ImageNet checkpoint (`resnet50-0676ba61.pth`, 102,530,333 bytes) was downloaded and used, not random initialization. Total loss was finite at all logged windows through iter 1,000 (1.96 at iter 50; 0.88 at iter 1,000).
 
 ## Environment before changes
 
@@ -41,7 +41,7 @@ python -c "import torch,mmcv,mmdet; from mmcv.ops import nms; print(torch.__vers
 PYTHONPATH=$PWD python tools/train.py --help
 ```
 
-Both imports and CLI help passed after the changes above. A dynamic model build/forward from both the source config and README-indicated anchor-based wrapper completed on CUDA using a 640x640 random input; a CUDA NMS check kept the expected boxes. Dataset builds passed after extraction. The one-epoch DUO smoke is now the active validation gate; at the latest check it reached 800 / approximately 3,309 with finite losses. Its checkpoint/evaluation and final status are pending.
+Both imports and CLI help passed after the changes above. A dynamic model build/forward from both the source config and README-indicated anchor-based wrapper completed on CUDA using a 640x640 random input; a CUDA NMS check kept the expected boxes. Dataset builds passed after extraction. The one-epoch DUO smoke is now the active validation gate; at the latest check it reached 1,000 / approximately 3,309 with finite losses. Its checkpoint/evaluation and final status are pending.
 
 The two reproduction configs load on the server with 35 epochs and paper LR milestones `[27, 32]`; all shell scripts pass `bash -n`, and the UTDAC annotation converter passes Python compilation. Both datasets have since built successfully; the one-epoch DUO smoke test is in progress as described above.
 

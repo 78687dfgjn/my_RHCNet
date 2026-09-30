@@ -13,4 +13,4 @@ Paper reference (AP / AP50 / AP75 / APS / APM / APL): 70.53 / 87.56 / 77.29 / 56
 | APM | 71.70 | Pending | Pending |
 | APL | 69.94 | Pending | Pending |
 
-Training time, seconds/iteration, peak GPU memory, checkpoint, and evaluation command: pending. The smoke run is at 800 / approximately 3,309 iterations; the latest seven logged windows average approximately 7.05 s/iteration. No test mAP is claimed from the incomplete smoke.
+Training time, seconds/iteration, peak GPU memory, checkpoint, and evaluation command: pending. The smoke run is at 1,000 / approximately 3,309 iterations; the latest five logged windows average approximately 4.93 s/iteration. No test mAP is claimed from the incomplete smoke.
