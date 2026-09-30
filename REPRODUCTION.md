@@ -1,6 +1,6 @@
 # RHCNet Reproduction
 
-This project runs the repository's RHCNet implementation on DUO and UTDAC2020. The paper/source architecture differences are documented in [`reproduction_logs/code_audit.md`](reproduction_logs/code_audit.md) and [`REPRODUCTION_DEVIATIONS.md`](REPRODUCTION_DEVIATIONS.md). The reproduction configs restore the paper's explicit 35-epoch schedule and LR milestones; they do not add missing paper modules or replace the configured detector head.
+This project reproduces the **official released-code baseline** on DUO and standard public UTDAC2020. The audited architecture is TOOD -> ResNet -> HFCP -> TOODHead; it is not the paper's exact architecture. Differences are documented in [`reproduction_logs/code_audit.md`](reproduction_logs/code_audit.md) and [`REPRODUCTION_DEVIATIONS.md`](REPRODUCTION_DEVIATIONS.md). `*_official_release.py` preserves the released `[24, 30]` LR schedule. Separate `*_paper_hparam.py` files record paper settings `[27, 32]`; they are not the selected baseline.
 
 ## Server layout
 
@@ -24,15 +24,9 @@ cd /hy-tmp/RHCNet/RHCNet
 mkdir -p data
 ln -s /hy-tmp/RHCNet/datasets/DUO data/DUO
 ln -s /hy-tmp/RHCNet/datasets/UTDAC2020 data/UTDAC
-python tools/dataset_converters/prepare_utdac_annotations.py \
-  --train-json data/UTDAC/annotations/instances_train2017.json \
-  --val-json data/UTDAC/annotations/instances_val2017.json \
-  --train-images data/UTDAC/train2017 \
-  --val-images data/UTDAC/val2017 \
-  --out-dir data/UTDAC/annotations_reproduction
 ```
 
-Confirm the actual extracted tree and annotation filenames before training. The expected paths are listed in each reproduction config and were based on inspection of the supplied archives.
+Confirm the extracted tree and annotation filenames before training. Use the original UTDAC standard train/val JSONs unchanged. A previous `annotations_reproduction/` folder may exist from earlier preparation; it deduplicates/filters data and is explicitly unselected.
 
 ## Environment
 
@@ -63,61 +57,64 @@ The backbone config requests `torchvision://resnet50` pretrained weights. The sm
 
 ## Smoke run
 
-Run one DUO epoch before a full experiment. This uses the supplied test split once to verify the evaluation path; do not use its score to select training settings or checkpoints.
+The active one-epoch smoke was started before the released-code/paper-hparam config split, using the legacy config alias (same model and first-epoch schedule). It is allowed to finish and will be evaluated separately. Its post-smoke auto-launch watcher is disabled. Do not start full training until the user reviews the smoke gate and explicitly instructs to proceed.
+
+For a fresh run, start the smoke manually with the official-release config:
 
 ```bash
 cd /hy-tmp/RHCNet/RHCNet
-mkdir -p reproduction_logs
-nohup bash scripts/smoke_rhcnet_duo.sh > reproduction_logs/duo_smoke.log 2>&1 &
-echo $! > reproduction_logs/duo_smoke.pid
+bash scripts/smoke_rhcnet_duo.sh
 ```
 
-Check the process, recent log, GPU use, checkpoint, and evaluation output before starting 35 epochs:
+Record full epoch wall time, mean/median iteration time, peak GPU memory, and GPU/CPU samples. The active HFCP code runs sklearn KMeans on CPU in each forward, so iteration speed varies. The smoke score verifies the path; it is not a training result.
+
+The active smoke's separate evaluation command (run only after `epoch_1.pth` exists):
 
 ```bash
-cat reproduction_logs/duo_smoke.pid
-ps -fp "$(cat reproduction_logs/duo_smoke.pid)"
-nvidia-smi
-tail -n 80 reproduction_logs/duo_smoke.log
+PYTHONPATH="$PWD" python tools/test.py \
+  configs/reproduction/rhcnet_duo_paper_hparam.py \
+  work_dirs/rhcnet_duo_smoke/epoch_1.pth \
+  --eval bbox \
+  --out work_dirs/rhcnet_duo_smoke/epoch_1_predictions.pkl
 ```
 
-Record 50-iteration timing, data time, GPU memory, and utilization in `reproduction_logs/benchmark_duo.txt`. The first available DUO smoke window measured 3.81 s/iteration and 0.071 s data time; the full 1-epoch smoke remains the gate before the 35-epoch run. The active HFCP code runs sklearn KMeans on CPU in each forward, so the single-window estimate is only approximate.
+For the currently running smoke, `scripts/eval_duo_smoke_after_train.sh` is an evaluation-only tmux watcher. It waits for the smoke exit marker and checkpoint, then runs the command above and records its exit status. It cannot launch training.
 
-## DUO training and final evaluation
+## DUO released-code training and final evaluation (requires explicit user go-ahead)
 
 The supplied DUO archive has train and test splits but no validation split. The config therefore evaluates the test set only at the final epoch; it does not choose a best checkpoint from test results.
 
 ```bash
 cd /hy-tmp/RHCNet/RHCNet
-nohup bash scripts/run_rhcnet_duo.sh >> reproduction_logs/duo_train.log 2>&1 &
-echo $! > reproduction_logs/duo_train.pid
+bash scripts/run_rhcnet_duo.sh
 ```
 
-The script resumes from `work_dirs/rhcnet_duo_paper/latest.pth` when present. The config saves an epoch checkpoint. After all 35 epochs, evaluate the final checkpoint:
+The script uses `configs/reproduction/rhcnet_duo_official_release.py` and resumes from `work_dirs/rhcnet_duo_official_release/latest.pth` when present. After all 35 epochs, evaluate the final checkpoint:
 
 ```bash
 bash scripts/eval_rhcnet.sh \
-  configs/reproduction/rhcnet_duo_paper.py \
-  work_dirs/rhcnet_duo_paper/epoch_35.pth \
+  configs/reproduction/rhcnet_duo_official_release.py \
+  work_dirs/rhcnet_duo_official_release/epoch_35.pth \
   --eval-options classwise=True
 ```
 
 ## UTDAC2020 training and evaluation
 
-After DUO smoke and training behavior are validated, run UTDAC2020. The standard four-class `train2017`/`val2017` files are used; `_waterweeds` annotation variants and unavailable `testA`/`testB` image sets are excluded. The preparation script writes derived JSON files that remove the exact-content train/val duplicate (`train2017/000004.jpg` duplicates `val2017/000001.jpg`) from train and drops five negative-dimension boxes; it never overwrites the source JSON. The derived files contain 5,167 train images / 37,186 annotations and 1,293 validation images / 9,488 annotations.
+UTDAC uses **standard public UTDAC2020 protocol**: 5,168 train + 1,293 val = 6,461 image entries. The RHCNet paper states 5,643; do not claim these are the same split. The exact-content image duplicate and five negative-dimension boxes are recorded and left unchanged. The configs point to original `annotations/instances_train2017.json` and `instances_val2017.json`; no derived-clean JSON is used. `_waterweeds` and unavailable `testA`/`testB` image sets are excluded.
+
+After DUO is reviewed and the user explicitly approves continuing, run:
 
 ```bash
 cd /hy-tmp/RHCNet/RHCNet
-nohup bash scripts/run_rhcnet_utdac.sh >> reproduction_logs/utdac_train.log 2>&1 &
-echo $! > reproduction_logs/utdac_train.pid
+bash scripts/run_rhcnet_utdac.sh
 ```
 
-This config evaluates the available validation split each epoch and keeps the best validation mAP. Evaluate the final checkpoint and best checkpoint separately, and report which result is used for comparison:
+This config evaluates the available validation split each epoch. Report epoch 35; do not cherry-pick a checkpoint by validation AP:
 
 ```bash
 bash scripts/eval_rhcnet.sh \
-  configs/reproduction/rhcnet_utdac_paper.py \
-  work_dirs/rhcnet_utdac_paper/best_bbox_mAP_epoch_*.pth
+  configs/reproduction/rhcnet_utdac_official_release.py \
+  work_dirs/rhcnet_utdac_official_release/epoch_35.pth
 ```
 
 ## Results and reproducibility records

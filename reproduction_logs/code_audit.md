@@ -5,7 +5,7 @@ Official source: `YitengGuo/RHCNet`, commit `27253dce2d70875cfc5983bfa3ad194583e
 
 ## Actual configured model and call path
 
-The README's training command contains a typo (`rhcnet_tood_r50_fpn_anchor_based_2x_duoc.py`). The corresponding checked-in config is `configs/rhcnet/rhcnet_tood_r50_fpn_anchor_based_2x_duo.py`; it inherits `rhcnet_tood_r50_fpn_2x_duo.py` and sets `bbox_head.anchor_type='anchor_based'`. The inherited config itself defaults to `anchor_free`, so these are distinct runs. Until there is evidence identifying which produced the paper numbers, the README-indicated anchor-based config is the best source-code default, but this choice is recorded rather than inferred silently.
+The README's training command contains a typo (`rhcnet_tood_r50_fpn_anchor_based_2x_duoc.py`). The corresponding checked-in config is `configs/rhcnet/rhcnet_tood_r50_fpn_anchor_based_2x_duo.py`; it inherits `rhcnet_tood_r50_fpn_2x_duo.py` and sets `bbox_head.anchor_type='anchor_based'`. The inherited config itself defaults to `anchor_free`, so these are distinct runs. The user selected the README-indicated anchor-based config as the released-code baseline; this selection is explicit and is not a claim about which config produced the paper table.
 
 The actual path in the README-indicated config is:
 
@@ -43,10 +43,10 @@ On the server, the model was built first from the checked-in base RHCNet config 
 
 ## Schedule and source inconsistencies
 
-The inherited RHCNet 2x schedule sets 35 epochs, SGD, initial LR `0.001`, momentum `0.9`, weight decay `0.0001`, linear warmup (500 iterations, ratio `0.001`) and LR steps `[24,30]`. Paper §4.1 specifies 35 epochs, LR `0.001`, SGD/momentum `0.9`, and steps `[27,32]`. The paper-explicit values should override the repository schedule in a separate reproduction config; warmup is a code-sourced setting because the paper does not specify it.
+The inherited RHCNet 2x schedule sets 35 epochs, SGD, initial LR `0.001`, momentum `0.9`, weight decay `0.0001`, linear warmup (500 iterations, ratio `0.001`) and LR steps `[24,30]`. Paper §4.1 specifies 35 epochs, LR `0.001`, SGD/momentum `0.9`, and steps `[27,32]`. The selected `official_release` baseline preserves `[24,30]`; separate `paper_hparam` configs record `[27,32]` without changing the architecture.
 
 The README reports UTDAC AP 50.8, while the paper's Table 1 reports 53.35. These values must remain separate reference points.
 
-## Training gate
+## Reproduction definition and training gate
 
-Full training is paused because LAM/RGFE, HFCP Focus, the detector/head/assigner, and the task-adaptive loss differ materially from the paper. The user has been asked to choose between (a) training the official implementation with paper-explicit schedule/path corrections and clearly reporting these deviations, or (b) first implementing missing/mismatched paper components, which would be a substantial method change beyond the checked-in implementation. No algorithm source has been modified and no full training has started.
+The user selected **RHCNet Official Released-Code Reproduction**. No RGFE, LAM, AutoAssign, or other paper-derived module will be guessed or added; the architecture remains the dynamically verified `TOOD -> ResNet -> HFCP -> TOODHead` path, with PAM/CGCA active and Focus bypassed. No algorithm source has been modified. The current one-epoch DUO smoke is allowed to finish and will be evaluated independently. Its post-smoke watcher was disabled before it could start full training. Full training is held until the smoke gate is reported and the user explicitly instructs whether to proceed.

@@ -5,6 +5,6 @@ cd "$(dirname "$0")/.."
 export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
 
 exec python tools/train.py \
-  configs/reproduction/rhcnet_duo_paper.py \
+  configs/reproduction/rhcnet_duo_official_release.py \
   --work-dir work_dirs/rhcnet_duo_smoke \
   --cfg-options runner.max_epochs=1 evaluation.interval=1

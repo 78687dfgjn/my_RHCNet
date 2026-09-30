@@ -1,0 +1,26 @@
+RHCNet config and raw UTDAC dataset validation
+Date: 2026-09-30 (server)
+
+All four configs loaded with MMDetection Config.fromfile.
+
+Config                                LR      epochs  LR milestones  Train annotation
+rhcnet_duo_official_release.py       0.001   35      [24, 30]       DUO/annotations/instances_train.json
+rhcnet_duo_paper_hparam.py           0.001   35      [27, 32]       DUO/annotations/instances_train.json
+rhcnet_utdac_official_release.py     0.001   35      [24, 30]       UTDAC/annotations/instances_train2017.json
+rhcnet_utdac_paper_hparam.py         0.001   35      [27, 32]       UTDAC/annotations/instances_train2017.json
+
+The UTDAC official-release train/val datasets built from the original standard
+JSONs, with the expected category-name mapping:
+- Train: 5,168 image entries; 37,192 parsed boxes.
+- Val: 1,293 image entries; 9,488 parsed boxes.
+- Classes: holothurian, echinus, scallop, starfish.
+
+The source annotation files contain 37,196 train / 9,489 val annotation
+entries. The five negative-dimension boxes remain in the source JSON; the
+unchanged MMDetection COCO parser skips them when constructing targets. No
+duplicate image or annotation was removed from the dataset or configs.
+
+The active smoke began before this naming split with the legacy paper config
+alias and is allowed to finish. Its LR is 0.001 and epoch 1 occurs before
+either schedule's first LR milestone. Its original run command/config path is
+retained in the full smoke log.

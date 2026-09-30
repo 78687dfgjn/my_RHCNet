@@ -4,8 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
 
-config="configs/reproduction/rhcnet_duo_paper.py"
-work_dir="work_dirs/rhcnet_duo_paper"
+config="configs/reproduction/rhcnet_duo_official_release.py"
+work_dir="work_dirs/rhcnet_duo_official_release"
 mkdir -p "$work_dir"
 
 resume_args=()

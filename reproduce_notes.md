@@ -5,9 +5,10 @@
 - Official repository: `https://github.com/YitengGuo/RHCNet`
 - Audited commit: `27253dce2d70875cfc5983bfa3ad194583eb58ee`
 - Target repository: `git@github.com:78687dfgjn/my_RHCNet.git`
-- Official source files have not been modified. Paper-specific changes belong in `configs/reproduction/` and independent dataset scripts.
-- The official model passed construction and a random CUDA feature/head forward. Following the user's instruction to continue, training uses the repository's actual implementation, with paper/source mismatches reported rather than patched into a different algorithm. Both uploaded archives passed remote SHA256 and ZIP CRC checks, have been extracted to `/hy-tmp/RHCNet/datasets/`, and project data symlinks are active. UTDAC derived annotations were generated without changing the originals; both DUO and UTDAC configs successfully built their train/validation datasets. The one-epoch DUO smoke test is running in tmux as `rhcnet_duo_smoke`; it reached 1,000/approximately 3,309 iterations with finite losses. See `reproduction_logs/dataset_audit.md` and `reproduction_logs/benchmark_duo.txt`.
-- The smoke log confirms that the configured `torchvision://resnet50` ImageNet checkpoint (`resnet50-0676ba61.pth`, 102,530,333 bytes) was downloaded and used, not random initialization. Total loss was finite at all logged windows through iter 1,000 (1.96 at iter 50; 0.88 at iter 1,000).
+- Official source files have not been modified. The selected definition is **RHCNet Official Released-Code Reproduction**: use the actual TOOD/ResNet/HFCP/TOODHead path without paper-derived architecture edits. Official-release and paper-hparam configurations are separated under `configs/reproduction/`.
+- Both uploaded archives passed remote SHA256 and ZIP CRC checks and are extracted to `/hy-tmp/RHCNet/datasets/`; source archives, images, and annotations remain intact. A prior UTDAC derived-clean folder exists from earlier preparation but is now explicitly unselected; all benchmark configs point to the original public annotations.
+- The one-epoch DUO smoke is running in tmux as `rhcnet_duo_smoke`; latest verified progress was 1,550 / approximately 3,309 iterations with finite losses. Its originally started config has paper-hparam milestones, but this is an epoch-1 smoke only. The automatic full-training watcher has been stopped and its script now waits without launching training. Full training awaits explicit user instruction.
+- The smoke log confirms that the configured `torchvision://resnet50` ImageNet checkpoint (`resnet50-0676ba61.pth`, 102,530,333 bytes) was downloaded and used, not random initialization. See the benchmark log for all finite logged losses and timing samples.
 
 ## Environment before changes
 
@@ -26,13 +27,13 @@ One failed `apt-get update` used the default unprivileged apt sandbox, which cou
 
 ## Paper versus repository facts to preserve
 
-- Paper §4.1: 35 epochs, LR 0.001, SGD momentum 0.9, weight decay 0.0001, LR steps 27/32. Repo's 2x-derived config uses steps 24/30. A reproduction config should override only the paper-explicit steps and preserve the code-sourced warmup (500 iterations, ratio 0.001) with that provenance stated.
+- Paper §4.1: 35 epochs, LR 0.001, SGD momentum 0.9, weight decay 0.0001, LR steps 27/32. The selected official-release configs preserve repository steps 24/30. Separate paper-hparam configs document 27/32 and inherited code-sourced warmup (500 iterations, ratio 0.001).
 - README train command names a nonexistent `..._duoc.py`; an anchor-based wrapper with the likely intended name `..._duo.py` exists. The parent RHCNet config defaults to anchor-free. This distinction needs to be recorded in the experiment config/report.
 - Current config is TOOD/TOODHead with ATSS for its first four epochs and TaskAlignedAssigner thereafter; paper Figure 2 shows a dual-task head with AutoAssign. Repository AutoAssign code exists but is not selected by RHCNet configs.
 - LAM/RGFE and top-down Focus are not active in the current forward. PAM/CGCA are active. CGCA performs CPU KMeans and clusters channel maps by its current reshape, unlike the paper's stated pixel-feature prototypes.
 - Paper defines a custom IoU/centerness quality target; current TOOD code uses its alignment metric with standard QualityFocalLoss after the initial phase.
 - Paper Table 1: UTDAC AP 53.35. README: 50.8. Do not merge these references.
-- Local UTDAC archive has 6,461 standard four-class split entries versus 5,643 in the paper, one identical-content train/val image pair, and five negative-dimension boxes. A converter writes derived clean JSON under the data symlink, retains the validation copy, and preserves the originals. DUO has train/test but no distinct validation split. See the dataset audit for the evaluation/checkpoint policy.
+- Local UTDAC follows standard public UTDAC2020: 5,168 train + 1,293 val = 6,461 entries, versus 5,643 in the paper. There is one identical-content cross-split image pair and five negative-dimension boxes. The complete original entries are retained; earlier derived-clean JSONs are unselected and unused. DUO has train/test but no distinct validation split.
 
 ## Commands verified so far
 
@@ -41,9 +42,9 @@ python -c "import torch,mmcv,mmdet; from mmcv.ops import nms; print(torch.__vers
 PYTHONPATH=$PWD python tools/train.py --help
 ```
 
-Both imports and CLI help passed after the changes above. A dynamic model build/forward from both the source config and README-indicated anchor-based wrapper completed on CUDA using a 640x640 random input; a CUDA NMS check kept the expected boxes. Dataset builds passed after extraction. The one-epoch DUO smoke is now the active validation gate; at the latest check it reached 1,000 / approximately 3,309 with finite losses. Its checkpoint/evaluation and final status are pending.
+Both imports and CLI help passed after the initial environment setup. A dynamic model build/forward from the source and anchor-based wrapper completed on CUDA; CUDA NMS passed. The official-release and paper-hparam configs are being validated against the selected original data annotations. The one-epoch DUO smoke is the active validation gate; its checkpoint, standalone evaluation, and final status are pending.
 
-The two reproduction configs load on the server with 35 epochs and paper LR milestones `[27, 32]`; all shell scripts pass `bash -n`, and the UTDAC annotation converter passes Python compilation. Both datasets have since built successfully; the one-epoch DUO smoke test is in progress as described above.
+All four explicit official-release/paper-hparam configs loaded with MMDetection. Official-release schedules resolve to `[24, 30]`; paper-hparam schedules resolve to `[27, 32]`. The UTDAC official-release dataset built directly from original JSONs with 5,168 train / 1,293 val images and parsed 37,192 / 9,488 boxes. No full run is being started. The one-epoch DUO smoke must complete and pass its standalone evaluation before the gate is reported; it will then pause for explicit user instruction.
 
 ## GitHub Deploy Key
 
